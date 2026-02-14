@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from closet.models import ClothingItem
 
-
 # Configure Gemini API
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
@@ -29,17 +28,21 @@ def ai_assistant(request):
         }
 
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-3-flash-preview")
             response = model.generate_content(full_prompt)
             response_text = response.text.strip()
 
             # Parse through the response to get the items
             chosen_items = [item.strip() for item in response_text.split(',') if item.strip()]
 
-            # Filter clothing items by chosen items
+            # Debugging
+            print(f"AI Suggested: {chosen_items}")
+
+            # Filter clothing items
             reccomended_items = user_items.filter(title__in=chosen_items)
 
         except Exception as e:
             response_text = f"Error: {e}"
+            print(response_text)
 
     return render(request, "assistant/ai_assistant.html", {"response_text": response_text, "reccomended_items": reccomended_items})
